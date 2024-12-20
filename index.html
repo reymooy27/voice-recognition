@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Recognition</title>
+</head>
+<body>
+    <h1>Voice Recognition</h1>
+    <button id="startButton">Start Listening</button>
+    <p id="output"></p>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const output = document.getElementById('output');
+
+        // Check if the browser supports speech recognition
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'id-ID'; // Set language to Bahasa Indonesia
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                output.textContent = 'You said: ' + transcript;
+
+                // Send the transcript to the backend
+                fetch('/process_speech', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: transcript }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    output.textContent += '\nAI response: ' + data.reply;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    output.textContent += '\nError processing speech.';
+                });
+            };
+
+            startButton.addEventListener('click', function() {
+                recognition.start();
+                output.textContent = 'Listening... Speak now!';
+            });
+        } else {
+            startButton.disabled = true;
+            output.textContent = 'Speech recognition is not supported in this browser.';
+        }
+    </script>
+</body>
+</html>
