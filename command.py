@@ -28,7 +28,6 @@ APP = {
 # options.add_argument("profile-directory=Profile 1")
 browser = None
 
-
 #init speech recognition
 engine = pyttsx3.init()
 
@@ -36,49 +35,6 @@ engine = pyttsx3.init()
 def speak(text):
     engine.say(text)
     engine.runAndWait()
-
-def voice_recognition():
-    recognizer = sr.Recognizer()
-    while True:
-        with sr.Microphone() as source:
-            recognizer.adjust_for_ambient_noise(source)
-
-            try:
-                #TODO: ganti TTS enginenya ke yg lebih baik
-                audio = recognizer.listen(source, phrase_time_limit=10)
-                text = recognizer.recognize_google(audio, language="id-ID")
-
-                if "input" in text.lower():
-                    text = input("Input text: ")
-
-                #ini sebenarnya untuk scroll tiktok
-                #belum jadi kalau youtube short
-                #problemnya kalau ada kata next perintah yang lain gak jalan
-
-                # if "next" in text.lower() or "skip" in text.lower() or "berikutnya" in text.lower():
-                #     print("next ->")
-                #     ActionChains(browser).scroll_by_amount(0,700).perform()
-                #     continue
-
-                # if "back" == text.lower():
-                #     browser.back()
-
-                print(f"You : {text}")
-
-                reply = get_reply(text)
-
-                print(f"AI : {reply}")
-
-                # text to speech
-                #TODO: buat supaya tidak perlu menunggu / tidak blocking next command
-                speak(reply)
-
-
-            except sr.UnknownValueError:
-                print("Waiting for command")
-            except sr.RequestError as e:
-                print(f"Could not request results from Google Speech Recognition service; {e}\n")
-
 
 def get_reply(text):
     #TODO: ganti ke AI model yg lebih baik
@@ -123,8 +79,7 @@ def get_reply(text):
     response = model.generate_content("""You have the persona of a Jarvis like in Iron Man Movie, 
     Give output in plain text, without any symbol like ** for example, give short answer,""" + text)
 
-
     return response.text
 
-if __name__ == "__main__":
-    voice_recognition()
+# if __name__ == "__main__":
+#     voice_recognition()
