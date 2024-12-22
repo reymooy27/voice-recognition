@@ -22,7 +22,7 @@ APP = {
 # options.add_argument("profile-directory=Profile 1")
 browser = None
 
-#init speech recognition
+#init text to speech engine
 engine = pyttsx3.init()
 
 #text to speech function
@@ -57,14 +57,20 @@ def get_reply(text):
         #         continue
 
         response = model.generate_content("i want you to directly provide the link to the app or website that mentioned in this, : " + text + "for example, open youtube then give like https://youtube.com, do not provide any other text just the link in one line")
+
+        if "tiktok" in text.lower() or "tik tok" in text.lower():
+            browser.get("https://www.tiktok.com/")
+            return "Opened Tiktok"
+
+        if "new tab" in text.lower() or "tab baru" in text.lower():
+            browser.switch_to.new_window("tab")
+            browser.get(response.text)
+        else:
+            browser.get(response.text)
+
         if response.text[:5] != "https" or response.text[:4] != "http":
             return "No link found"
 
-        if "new tab" in text.lower() or "tab baru" in text.lower():
-
-            browser.switch_to.new_window("tab")
-
-        browser.get(response.text)
         return "Opened"
 
     #untuk search
@@ -73,16 +79,13 @@ def get_reply(text):
             browser = webdriver.Edge();
 
         if "new tab" in text.lower() or "tab baru" in text.lower():
-
             browser.switch_to.new_window("tab")
-
-        browser.get("https://www.google.com/search?q=" + text.replace("search", "").strip())
+            browser.get("https://www.google.com/search?q=" + text.replace("search", "").strip())
+        else:
+            browser.get("https://www.google.com/search?q=" + text.replace("search", "").strip())
 
         return "Searched" + text
 
     response = model.generate_content("""You have persona of a cool guy, you are using Bahasa Indonesia, Give output in plain text, without any symbol like ** for example, give short answer,""" + text)
 
     return response.text
-
-# if __name__ == "__main__":
-#     voice_recognition()
