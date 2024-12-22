@@ -44,31 +44,48 @@ while cap.isOpened():
             mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
             landmarks = hand_landmarks.landmark
 
-            middle_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
+            middle_finger_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
+            middle_finger_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_TIP]
             index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
             thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
+            ring_tip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP]
+            ring_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP]
 
-            finger_x = int(middle_finger_mcp.x * screen_width)
-            finger_y = int(middle_finger_mcp.y * screen_height * 1.2)
+            hand_x = int(middle_finger_mcp.x * screen_width)
+            hand_y = int(middle_finger_mcp.y * screen_height * 1.2)
 
             height, width, _ = frame.shape
+            middle_x, middle_y = int(middle_finger_tip.x * width), int(middle_finger_tip.y * height)
+            middle_mcp_x, middle_mcp_y = int(middle_finger_mcp.x * width), int(middle_finger_mcp.y * height)
             index_x, index_y = int(index_tip.x * width), int(index_tip.y * height)
             thumb_x, thumb_y = int(thumb_tip.x * width), int(thumb_tip.y * height)
+            ring_x, ring_y = int(ring_tip.x * width), int(ring_tip.y * height)
+            ring_mcp_x, ring_mcp_y = int(ring_mcp.x * width), int(ring_mcp.y * height)
 
-            distance = ((thumb_x - index_x) ** 2 + (thumb_y - index_y) ** 2) ** 0.5
+            distance_md_th = ((thumb_x - middle_x) ** 2 + (thumb_y - middle_y) ** 2) ** 0.5
+            distance_ind_th = ((thumb_x - index_x) ** 2 + (thumb_y - index_y) ** 2) ** 0.5
 
-            if distance < 40:  # Pinch gesture
+            if distance_ind_th < 40:
                 pyautogui.click()
-            # elif distance > 200:  # Spread gesture
-            #     scroll_down()
 
-            if finger_x < 400:
-                finger_x -= 200
+            if middle_y < middle_mcp_y and index_y < middle_mcp_y and ring_y > ring_mcp_y:
+                print("scroll down")
+                pyautogui.scroll(300)
+            elif middle_y > middle_mcp_y and index_y > middle_mcp_y :
+                print("scroll up")
+                pyautogui.scroll(-300)
 
-            pyautogui.moveTo(finger_x, finger_y)
+            # if finger_x < 400:
+            #     finger_x -= 200
 
-            cv2.putText(frame, f"Index: ({finger_x}, {finger_y})",
-                        (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            pyautogui.moveTo(hand_x, hand_y, tween=pyautogui.easeInOutQuad)
+
+            cv2.putText(frame, f"middle: ({middle_x}, {middle_y})", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(frame, f"thumb: ({thumb_x}, {thumb_y})", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            cv2.putText(frame, f"index: ({index_x}, {index_y})", (10, 110), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
+            cv2.putText(frame, f"Hand: ({hand_x}, {hand_y})",
+                        (10, 140), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             # Display finger states
             # fingers = [thumb_up, index_up, middle_up]
             # finger_names = ["Thumb", "Index", "Middle"]
