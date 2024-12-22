@@ -1,14 +1,8 @@
 import speech_recognition as sr
-import pyaudio
-import webbrowser as wb
 import google.generativeai as genai
 import pyttsx3
-from selenium import common
 from selenium import webdriver
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.actions.wheel_input import ScrollOrigin
-import threading
-import subprocess
+import pyautogui
 
 API_KEY = "AIzaSyDg7CrgXhz8a79-GbX_P_IBeHV7sX2Xj78"
 
@@ -43,6 +37,13 @@ def get_reply(text):
     model = genai.GenerativeModel("gemini-1.5-flash")
     response = ""
 
+    if "click" in text.lower() or "klik" in text.lower():
+        pyautogui.click()
+        return "Clicked"
+
+    if "type" in text.lower() or "ketik" in text.lower():
+        pyautogui.typewrite(text.replace("type", "").replace("ketik", "").strip())
+        return "Typed"
 
     #cek kalau ada perintah buka or open website
     if "buka" in text.lower() or "open" in text.lower():
@@ -64,6 +65,7 @@ def get_reply(text):
             browser.switch_to.new_window("tab")
 
         browser.get(response.text)
+        return "Opened"
 
     #untuk search
     if "search" in text.lower() or "cari" in text.lower():
@@ -76,8 +78,9 @@ def get_reply(text):
 
         browser.get("https://www.google.com/search?q=" + text.replace("search", "").strip())
 
-    response = model.generate_content("""You have the persona of a Jarvis like in Iron Man Movie, 
-    Give output in plain text, without any symbol like ** for example, give short answer,""" + text)
+        return "Searched" + text
+
+    response = model.generate_content("""You have persona of a cool guy, you are using Bahasa Indonesia, Give output in plain text, without any symbol like ** for example, give short answer,""" + text)
 
     return response.text
 

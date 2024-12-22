@@ -12,6 +12,16 @@ STREAMING_LIMIT = 240000  # 4 minutes
 SAMPLE_RATE = 16000
 CHUNK_SIZE = int(SAMPLE_RATE / 10)  # 100ms
 
+def list_audio_devices():
+    p = pyaudio.PyAudio()
+    for i in range(p.get_device_count()):
+        info = p.get_device_info_by_index(i)
+        print(f"Device {i}: {info['name']}")
+
+# list_audio_devices()
+DEVICE_INDEX = 7
+LANGUAGE_CODE = "id-ID"
+
 def get_current_time() -> int:
     """Return Current Time in MS.
 
@@ -65,6 +75,7 @@ class ResumableMicrophoneStream:
             # This is necessary so that the input device's buffer doesn't
             # overflow while the calling thread makes network requests, etc.
             stream_callback=self._fill_buffer,
+            input_device_index=DEVICE_INDEX,
         )
 
     def __enter__(self: object) -> object:
@@ -227,7 +238,7 @@ def listen_print_loop(responses: object, stream: object) -> None:
                 stream.closed = True
                 break
             
-            time.sleep(0.5)
+            time.sleep(1)
             res = get_reply(transcript)
             # speak(res)
             print("AI: " + res)
@@ -243,7 +254,7 @@ def main() -> None:
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=SAMPLE_RATE,
-        language_code="en-US",
+        language_code=LANGUAGE_CODE,
         max_alternatives=1,
     )
 
@@ -252,13 +263,10 @@ def main() -> None:
     )
 
     mic_manager = ResumableMicrophoneStream(SAMPLE_RATE, CHUNK_SIZE)
-    sys.stdout.write('\nListening, say "Quit" or "Exit" to stop.\n\n')
 
     with mic_manager as stream:
         while not stream.closed:
-            sys.stdout.write(
-                "\n" + str(STREAMING_LIMIT * stream.restart_counter) + ": NEW REQUEST\n"
-            )
+            print("Listening...")
 
             stream.audio_input = []
             audio_generator = stream.generator()
