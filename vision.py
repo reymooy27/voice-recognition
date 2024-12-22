@@ -52,10 +52,12 @@ while cap.isOpened():
                 index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_TIP]
                 thumb_tip = hand_landmarks.landmark[mp_hands.HandLandmark.THUMB_TIP]
                 ring_tip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_TIP]
+                ring_pip = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_PIP]
                 ring_mcp = hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP]
+                little_tip = hand_landmarks.landmark[mp_hands.HandLandmark.PINKY_TIP]
 
-                hand_x = int(index_tip.x * screen_width)
-                hand_y = int(index_tip.y * screen_height * 1.2)
+                hand_x = int(index_tip.x * screen_width) * 1.5
+                hand_y = int(index_tip.y * screen_height) * 1.2
 
                 height, width, _ = frame.shape
                 middle_x, middle_y = int(middle_finger_tip.x * width), int(middle_finger_tip.y * height)
@@ -63,23 +65,32 @@ while cap.isOpened():
                 index_x, index_y = int(index_tip.x * width), int(index_tip.y * height)
                 thumb_x, thumb_y = int(thumb_tip.x * width), int(thumb_tip.y * height)
                 ring_x, ring_y = int(ring_tip.x * width), int(ring_tip.y * height)
+                ring_pip_x, ring_pip_y = int(ring_pip.x * width), int(ring_pip.y * height)
                 ring_mcp_x, ring_mcp_y = int(ring_mcp.x * width), int(ring_mcp.y * height)
+                little_x, little_y = int(little_tip.x * width), int(little_tip.y * height)
 
                 distance_md_th = ((thumb_x - middle_x) ** 2 + (thumb_y - middle_y) ** 2) ** 0.5
                 distance_ind_th = ((thumb_x - index_x) ** 2 + (thumb_y - index_y) ** 2) ** 0.5
 
-                if distance_ind_th < 40:
+                if distance_ind_th < 30:
                     hand_x = pyautogui.position().x
                     hand_y = pyautogui.position().y
                     pyautogui.click()
                     print("click")
 
-                if middle_y < middle_mcp_y and index_y < middle_mcp_y and ring_y > ring_mcp_y:
+                # if distance_md_th < 50:
+                #     hand_x = pyautogui.position().x
+                #     hand_y = pyautogui.position().y
+                #     pyautogui.rightClick()
+                #     print("click")
+
+                if middle_y < middle_mcp_y and index_y < middle_mcp_y and ring_y < ring_mcp_y and little_y > ring_pip_y:
                     hand_x = pyautogui.position().x
                     hand_y = pyautogui.position().y
                     pyautogui.scroll(300)
                     print("scroll up")
-                elif middle_y > middle_mcp_y and index_y > middle_mcp_y :
+
+                elif middle_y > middle_mcp_y and index_y > middle_mcp_y and ring_y > middle_mcp_y:
                     hand_x = pyautogui.position().x
                     hand_y = pyautogui.position().y
                     pyautogui.scroll(-300)
@@ -87,8 +98,15 @@ while cap.isOpened():
 
                 # if finger_x < 400:
                 #     finger_x -= 200
+                #
+                print(index_y)
 
-                pyautogui.moveTo(hand_x, hand_y, 0.1 , pyautogui.easeInOutQuad)
+                if index_y < thumb_y and middle_y < thumb_y and ring_y > thumb_y:
+                    print("move to")
+                    if index_y > 300:
+                        hand_y += 100
+
+                    pyautogui.moveTo(hand_x, hand_y, 0.09, pyautogui.easeInOutQuad)
 
                 cv2.putText(frame, f"middle: ({middle_x}, {middle_y})", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 cv2.putText(frame, f"thumb: ({thumb_x}, {thumb_y})", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
